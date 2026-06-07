@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gurudev Travels · Premium Innova Travel</title>
+  <meta name="description" content="Book premium Toyota Innova cabs for your next journey — clean, comfortable, reliable." />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: {
+          brand:{50:'#eff8ff',100:'#dbeefe',200:'#bfe3fe',300:'#93d2fd',400:'#60b8fa',500:'#3b9bf6',600:'#2480eb',700:'#1c69d8',800:'#1d56af',900:'#1d4a8a'},
+          jade:{50:'#edfcf4',100:'#d4f7e3',200:'#aceecb',300:'#75dfac',400:'#3cc788',500:'#16a06b',600:'#0a8056',700:'#086746',900:'#06402e'},
+        },
+        fontFamily:{ sans:['Inter','system-ui','sans-serif'] },
+        boxShadow:{ glow:'0 20px 60px -15px rgba(36,128,235,0.35)' },
+      }}
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet — open-source map (OpenStreetMap), no API key needed -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 font-sans antialiased">
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="fixed top-0 inset-x-0 z-40 transition-colors duration-300" id="navbar">
+    <nav class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+      <a href="#home" class="flex items-center gap-2 font-extrabold text-lg text-white">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-jade-500 shadow-glow">🚕</span>
+        <span>Gurudev Travels</span>
+      </a>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <a href="#home"    class="nav-link nav-on-hero">Home</a>
+        <a href="#about"   class="nav-link nav-on-hero">About</a>
+        <a href="#fleet"   class="nav-link nav-on-hero">Cars</a>
+        <a href="#discover" class="nav-link nav-on-hero hidden sm:inline-block">Destinations</a>
+        <a href="#booking" class="nav-link nav-on-hero">Booking</a>
+        <a href="#contact" class="nav-link nav-on-hero hidden sm:inline-block">Contact</a>
+        <button id="themeToggle" aria-label="Toggle theme"
+          class="ml-1 grid place-items-center w-10 h-10 rounded-xl border border-white/30 text-white hover:bg-white/10 transition">
+          <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============================ HOME / HERO ============================ -->
+  <section id="home" class="hero relative min-h-screen flex items-center">
+    <!-- background image (swap images/hero.jpg). Falls back to a gradient. -->
+    <img src="assets/img/hero.jpg" alt="" class="hero-bg" onerror="this.style.display='none'; document.getElementById('home').classList.add('hero-grad');" />
+    <div class="hero-overlay"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-5 w-full pt-24 pb-16">
+      <div class="max-w-xl text-white">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur border border-white/20">🚐 Toyota Innova fleet</span>
+        <h1 class="mt-5 text-5xl sm:text-6xl font-extrabold leading-[1.05] tracking-tight">
+          Explore The Best <br>Of <span class="text-jade-300">Your Journey</span>
+        </h1>
+        <p class="mt-5 text-lg text-white/85 max-w-md">Comfortable, air-conditioned Innova cabs with professional drivers — from any village or city, booked in seconds.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#booking" class="rounded-xl px-7 py-3.5 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 shadow-glow hover:opacity-95 transition">Book a cab</a>
+          <a href="#fleet" class="rounded-xl px-7 py-3.5 font-semibold text-white border border-white/40 hover:bg-white/10 transition">View cars</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- vertical social links -->
+    <div class="hero-social">
+      <a href="#" class="hero-social-link">🅵</a>
+      <a href="#" class="hero-social-link">🅸</a>
+      <a href="#" class="hero-social-link">🆇</a>
+    </div>
+
+    <!-- bottom info card -->
+    <div class="hero-info">
+      <div>
+        <span class="block font-semibold text-white">Top-rated Innova rides</span>
+        <a href="#fleet" class="text-sm text-jade-300 font-semibold hover:underline">View fleet →</a>
+      </div>
+      <img src="assets/img/hero2.jpg" alt="" class="hero-info-img" onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
+    </div>
+  </section>
+
+  <!-- ============================ ABOUT ============================ -->
+  <section id="about" class="max-w-6xl mx-auto px-5 py-20">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="reveal">
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">More Comfort <br>For Every Mile</h2>
+        <p class="mt-4 text-slate-500 dark:text-slate-400 max-w-md">From quick airport transfers to long outstation trips, our well-maintained Innova fleet and verified drivers get you there safely — at clear, upfront per-km fares. You choose the route, we handle the rest.</p>
+        <a href="#booking" class="inline-block mt-7 rounded-xl px-7 py-3.5 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 shadow-glow hover:opacity-95 transition">Reserve a cab</a>
+      </div>
+      <div class="about-imgs reveal">
+        <img src="assets/img/about1.jpg" alt="" class="about-img about-img-one" onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
+        <img src="assets/img/about2.jpg" alt="" class="about-img about-img-two" onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FLEET (cars) ============================ -->
+  <section id="fleet" class="max-w-6xl mx-auto px-5 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-10">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">Our fleet</span>
+      <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Choose Your Innova</h2>
+      <p class="mt-3 text-slate-500 dark:text-slate-400">Every car is air-conditioned, sanitised and driven by a professional.</p>
+    </div>
+    <div id="fleetGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- ============================ DESTINATIONS (carousel) ============================ -->
+  <section id="discover" class="py-16">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-jade-100 text-jade-700 dark:bg-jade-900/40 dark:text-jade-300">Destinations</span>
+        <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Discover Popular Trips</h2>
+        <p class="mt-3 text-slate-500 dark:text-slate-400">Favourite routes our travellers love. Swipe to explore.</p>
+      </div>
+    </div>
+    <div class="carousel max-w-6xl mx-auto px-5">
+      <a href="#booking" class="dest-card"><img src="assets/img/dest1.jpg" alt="" onerror="this.remove(); this.parentElement.classList.add('img-fallback');"><div class="dest-overlay"></div><div class="dest-label"><h3 class="text-xl font-bold">Ooty</h3><span class="text-sm text-white/80">Hill station · day trip</span></div></a>
+      <a href="#booking" class="dest-card"><img src="assets/img/dest2.jpg" alt="" onerror="this.remove(); this.parentElement.classList.add('img-fallback');"><div class="dest-overlay"></div><div class="dest-label"><h3 class="text-xl font-bold">Munnar</h3><span class="text-sm text-white/80">Tea hills · weekend</span></div></a>
+      <a href="#booking" class="dest-card"><img src="assets/img/dest3.jpg" alt="" onerror="this.remove(); this.parentElement.classList.add('img-fallback');"><div class="dest-overlay"></div><div class="dest-label"><h3 class="text-xl font-bold">Goa</h3><span class="text-sm text-white/80">Beaches · outstation</span></div></a>
+      <a href="#booking" class="dest-card"><img src="assets/img/dest4.jpg" alt="" onerror="this.remove(); this.parentElement.classList.add('img-fallback');"><div class="dest-overlay"></div><div class="dest-label"><h3 class="text-xl font-bold">Kodaikanal</h3><span class="text-sm text-white/80">Lakes · family</span></div></a>
+      <a href="#booking" class="dest-card"><img src="assets/img/dest5.jpg" alt="" onerror="this.remove(); this.parentElement.classList.add('img-fallback');"><div class="dest-overlay"></div><div class="dest-label"><h3 class="text-xl font-bold">Pondicherry</h3><span class="text-sm text-white/80">Coast · getaway</span></div></a>
+    </div>
+  </section>
+
+  <!-- ============================ EXPERIENCE (stats) ============================ -->
+  <section class="max-w-6xl mx-auto px-5 py-16">
+    <h2 class="text-center text-3xl sm:text-4xl font-extrabold tracking-tight">Trusted On Every Trip</h2>
+    <div class="grid lg:grid-cols-2 gap-12 items-center mt-10">
+      <div class="grid grid-cols-3 gap-6 text-center">
+        <div class="reveal"><div class="text-4xl font-extrabold bg-gradient-to-r from-brand-600 to-jade-500 bg-clip-text text-transparent">12</div><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Years<br>experience</p></div>
+        <div class="reveal"><div class="text-4xl font-extrabold bg-gradient-to-r from-brand-600 to-jade-500 bg-clip-text text-transparent">50k+</div><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Happy<br>riders</p></div>
+        <div class="reveal"><div class="text-4xl font-extrabold bg-gradient-to-r from-brand-600 to-jade-500 bg-clip-text text-transparent">650+</div><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Destinations<br>covered</p></div>
+      </div>
+      <div class="about-imgs reveal">
+        <img src="assets/img/exp1.jpg" alt="" class="about-img about-img-one" onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
+        <img src="assets/img/exp2.jpg" alt="" class="about-img about-img-two" onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ BOOKING ============================ -->
+  <section id="booking" class="relative overflow-hidden py-20 bg-slate-100/60 dark:bg-slate-900/40">
+    <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-jade-400/20 blur-3xl"></div>
+    <div class="relative max-w-5xl mx-auto px-5 grid lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-jade-100 text-jade-700 dark:bg-jade-900/40 dark:text-jade-300">Booking</span>
+        <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Reserve Your Innova</h2>
+        <p class="mt-3 text-slate-500 dark:text-slate-400 max-w-md">Type any pickup & drop — village, town or landmark — or tap 📍 to pick the exact spot on the map. Submitting notifies the owner and sends you a confirmation on WhatsApp.</p>
+        <ul class="mt-6 space-y-3 text-sm">
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-8 h-8 rounded-lg bg-jade-100 dark:bg-jade-900/40">✓</span> Free cancellation up to 2 hours before</li>
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-8 h-8 rounded-lg bg-jade-100 dark:bg-jade-900/40">✓</span> Driver details shared before pickup</li>
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-8 h-8 rounded-lg bg-jade-100 dark:bg-jade-900/40">✓</span> Pay after the ride</li>
+        </ul>
+      </div>
+
+      <div class="rounded-3xl bg-white dark:bg-slate-900 shadow-glow border border-slate-100 dark:border-slate-800 p-6 sm:p-8">
+        <form id="bookingForm" class="space-y-4" novalidate>
+          <div>
+            <label class="form-label" for="pickup">Pickup point</label>
+            <div class="flex gap-2">
+              <input id="pickup" required placeholder="Village, town or address" class="form-input" autocomplete="off" list="pickupList" />
+              <button type="button" class="map-pick-btn" data-target="pickup" title="Pick on map">📍</button>
+            </div>
+            <datalist id="pickupList"></datalist>
+          </div>
+          <div>
+            <label class="form-label" for="drop">Drop point</label>
+            <div class="flex gap-2">
+              <input id="drop" required placeholder="Village, town or address" class="form-input" autocomplete="off" list="dropList" />
+              <button type="button" class="map-pick-btn" data-target="drop" title="Pick on map">📍</button>
+            </div>
+            <datalist id="dropList"></datalist>
+          </div>
+
+          <a id="mapLink" href="#" target="_blank" rel="noopener"
+             class="hidden items-center gap-2 text-sm font-semibold text-brand-600 dark:text-brand-300 hover:underline">
+            🗺️ View route on Google Maps
+          </a>
+
+          <div>
+            <label class="form-label" for="car">Car</label>
+            <select id="car" class="form-input"></select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="form-label" for="dateFrom">📅 Travel date — From</label>
+              <input type="date" id="dateFrom" required class="form-input date-input" />
+            </div>
+            <div>
+              <label class="form-label" for="dateTo">📅 Travel date — To</label>
+              <input type="date" id="dateTo" required class="form-input date-input" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="form-label" for="passengers">Passengers</label><input type="number" id="passengers" min="1" max="8" value="2" required class="form-input" /></div>
+            <div><label class="form-label" for="name">Your name</label><input type="text" id="name" required placeholder="Full name" class="form-input" /></div>
+          </div>
+          <div>
+            <label class="form-label" for="phone">WhatsApp number</label>
+            <input type="tel" id="phone" required placeholder="e.g. 919876543210" pattern="[0-9]{10,15}" class="form-input" />
+            <p class="text-xs text-slate-400 mt-1">Include country code, digits only (no + or spaces).</p>
+          </div>
+
+          <button type="submit" id="submitBtn"
+            class="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 hover:opacity-95 active:scale-[.99] shadow-glow transition disabled:opacity-60 disabled:cursor-not-allowed">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2z"/></svg>
+            <span id="btnText">Confirm & send on WhatsApp</span>
+            <span id="btnSpinner" class="hidden spinner"></span>
+          </button>
+          <p id="formError" class="hidden text-sm text-red-500 font-medium text-center"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ SUBSCRIBE / CTA ============================ -->
+  <section class="max-w-6xl mx-auto px-5 py-16">
+    <div class="rounded-3xl bg-gradient-to-r from-brand-600 to-jade-500 px-6 sm:px-12 py-12 text-center text-white shadow-glow">
+      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Get Trip Offers & Updates</h2>
+      <p class="mt-3 text-white/85 max-w-xl mx-auto">Subscribe for seasonal discounts on popular routes. No spam — just good deals.</p>
+      <form id="subscribeForm" class="mt-7 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+        <input type="email" required placeholder="Enter your email" class="flex-1 rounded-xl px-4 py-3 text-slate-800 outline-none" />
+        <button class="rounded-xl px-6 py-3 font-semibold bg-slate-900 text-white hover:bg-slate-800 transition">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============================ CONTACT ============================ -->
+  <section id="contact" class="max-w-6xl mx-auto px-5 py-16">
+    <div class="grid lg:grid-cols-2 gap-8 items-start">
+      <div>
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">Contact</span>
+        <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Get In Touch</h2>
+        <p class="mt-3 text-slate-500 dark:text-slate-400">Questions about a route, fare or big-group booking? We reply fast.</p>
+        <ul class="mt-6 space-y-4">
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40">📞</span><div><p class="text-xs text-slate-400">Call / WhatsApp</p><a id="phoneLink" href="#" class="font-medium hover:text-brand-600">+91 96882 11890</a></div></li>
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-10 h-10 rounded-xl bg-jade-100 dark:bg-jade-900/40">📧</span><div><p class="text-xs text-slate-400">Email</p><a href="mailto:hello@gurudevtravels.in" class="font-medium hover:text-brand-600">hello@gurudevtravels.in</a></div></li>
+          <li class="flex items-center gap-3"><span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40">📍</span><div><p class="text-xs text-slate-400">Office</p><p class="font-medium">MG Road, Bengaluru, India</p></div></li>
+        </ul>
+      </div>
+
+      <div class="rounded-3xl bg-white dark:bg-slate-900 shadow-glow border border-slate-100 dark:border-slate-800 p-6 sm:p-8">
+        <h3 class="text-xl font-bold">Send a message</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">It opens WhatsApp with your message ready to send.</p>
+        <form id="contactForm" class="space-y-4">
+          <div><label class="form-label" for="cName">Name</label><input id="cName" required class="form-input" placeholder="Your name" /></div>
+          <div><label class="form-label" for="cMsg">Message</label><textarea id="cMsg" required rows="4" class="form-input resize-none" placeholder="How can we help?"></textarea></div>
+          <button type="submit" class="w-full rounded-xl py-3.5 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 shadow-glow hover:opacity-95 transition">Send via WhatsApp</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="bg-slate-900 text-slate-300">
+    <div class="max-w-6xl mx-auto px-5 py-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <h3 class="text-white text-xl font-extrabold flex items-center gap-2"><span class="grid place-items-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-jade-500">🚕</span> Gurudev Travels</h3>
+        <p class="mt-3 text-sm text-slate-400">You choose the destination, we offer you the comfortable Innova experience.</p>
+        <div class="mt-4 flex gap-3 text-lg">
+          <a href="#" class="hover:text-white">🅵</a><a href="#" class="hover:text-white">🅸</a><a href="#" class="hover:text-white">🆇</a><a href="#" class="hover:text-white">▶</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-bold">Company</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="#about" class="hover:text-white">About us</a></li>
+          <li><a href="#fleet" class="hover:text-white">Our fleet</a></li>
+          <li><a href="#discover" class="hover:text-white">Destinations</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-bold">Support</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="#booking" class="hover:text-white">Book a cab</a></li>
+          <li><a href="#contact" class="hover:text-white">Contact us</a></li>
+          <li><a href="#" class="hover:text-white">FAQs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-bold">Get in touch</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li>📞 +91 96882 11890</li>
+          <li>📧 hello@gurudevtravels.in</li>
+          <li>📍 Bengaluru, India</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-800">
+      <div class="max-w-6xl mx-auto px-5 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-400">
+        <p>© <span id="year"></span> Gurudev Travels. All rights reserved.</p>
+        <div class="flex gap-5"><a href="#" class="hover:text-white">Terms</a><a href="#" class="hover:text-white">Privacy</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- scroll up -->
+  <a href="#home" class="scrollup" aria-label="Scroll up">↑</a>
+
+  <!-- ===== MAP PICKER MODAL ===== -->
+  <div id="mapModal" class="hidden fixed inset-0 z-50 grid place-items-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-pop w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+        <h3 id="mapModalTitle" class="font-bold text-lg">Select location</h3>
+        <button id="mapClose" class="grid place-items-center w-9 h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xl">✕</button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="relative">
+          <input id="mapSearch" placeholder="🔍 Search a place, village or landmark…" class="form-input" autocomplete="off" />
+          <ul id="mapResults" class="map-results hidden"></ul>
+        </div>
+        <div id="mapCanvas" class="map-canvas rounded-xl"></div>
+        <p class="text-xs text-slate-400">Tap anywhere on the map, drag the pin, or search above to set the exact spot. Maps by OpenStreetMap.</p>
+        <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 text-sm">
+          <span class="text-slate-400">Selected:</span> <span id="mapPickedAddr" class="font-medium">—</span>
+        </div>
+        <button id="mapConfirm" class="w-full rounded-xl py-3 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 shadow-glow hover:opacity-95 transition disabled:opacity-60" disabled>Use this location</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SUCCESS MODAL ===== -->
+  <div id="successModal" class="hidden fixed inset-0 z-50 grid place-items-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-pop w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl p-7 text-center">
+      <div class="mx-auto w-20 h-20 grid place-items-center rounded-full bg-jade-100 dark:bg-jade-900/40">
+        <svg class="checkmark w-12 h-12 text-jade-500" viewBox="0 0 52 52">
+          <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+          <path class="checkmark-check" fill="none" d="M14 27l8 8 16-16"/>
+        </svg>
+      </div>
+      <h3 class="mt-5 text-2xl font-extrabold">Booking confirmed! 🎉</h3>
+      <p id="successNote" class="mt-2 text-slate-500 dark:text-slate-400">The cab owner has been notified on WhatsApp. Send the customer their confirmation below.</p>
+      <div id="modalSummary" class="mt-5 text-left text-sm rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 space-y-1.5"></div>
+
+      <a id="waOwnerBtn" href="#" target="_blank" rel="noopener"
+        class="mt-5 w-full flex items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white bg-[#25D366] hover:brightness-95 transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2z"/></svg>
+        📩 Notify cab owner
+      </a>
+      <a id="waCustomerBtn" href="#" target="_blank" rel="noopener"
+        class="mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-3 font-semibold text-white bg-brand-600 hover:brightness-95 transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2z"/></svg>
+        ✅ Send confirmation to customer
+      </a>
+      <button id="closeModal" class="mt-3 w-full rounded-xl py-3 font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Done</button>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
