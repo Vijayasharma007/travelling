@@ -14,8 +14,11 @@
 const OWNER_WHATSAPP = "919688211890"; // +91 96882 11890
 //        (the CUSTOMER's number is taken from the booking form's phone field)
 
-// 🔧 2) Maps are 100% free & open-source — OpenStreetMap + Leaflet + Nominatim.
-//        NO API KEY NEEDED. Nothing to configure here. 🎉
+// 🔧 2) Location search. Works with NO key (OpenStreetMap + Nominatim). For Google-quality
+//        suggestions (best coverage of Indian villages/landmarks) paste a Google Maps Platform key
+//        with "Places API (New)" + "Geocoding API" enabled and restricted to your site's domain.
+//        Leave PASTE_ to keep using the free OpenStreetMap search.
+const GOOGLE_MAPS_KEY = "PASTE_YOUR_GOOGLE_MAPS_API_KEY_HERE";
 
 // 🔧 3) Optional Apps Script URL to also save bookings to a Google Sheet (leave PASTE_ to skip).
 const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
@@ -24,14 +27,10 @@ const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 const DEFAULT_MAP_CENTER = { lat: 11.1271, lng: 78.6569 }; // Tamil Nadu, India
 const DEFAULT_MAP_ZOOM = 7;
 
-// 🔧 5) Your Innova fleet. Put photos in assets/img/ and update `img` (missing -> 🚙 placeholder).
+// 🔧 5) Your fleet.
 const FLEET = [
-  { id:"crysta",  img:"assets/img/crysta.jpg",  name:"Innova Crysta",          seats:7, bags:4, fare:"₹18/km", tag:"Most popular",     badge:"jade",
-    desc:"The classic premium 7-seater. Smooth ride, captain seats, perfect for families & outstation." },
-  { id:"hycross", img:"assets/img/hycross.jpg", name:"Innova Hycross",         seats:7, bags:4, fare:"₹22/km", tag:"Hybrid · premium", badge:"brand",
-    desc:"Latest hybrid Innova — quieter, fuel-efficient and plush. The flagship of our fleet." },
-  { id:"crysta8", img:"assets/img/crysta8.jpg", name:"Innova Crysta (8-seat)", seats:8, bags:3, fare:"₹20/km", tag:"Big groups",       badge:"brand",
-    desc:"8-seater bench layout for larger groups who need an extra seat for the journey." },
+  { id:"rumion", img:"assets/img/rumion.png", name:"Toyota Rumion", seats:7, bags:4, fare:"Contact for pricing", tag:"White · Premium", badge:"jade",
+    desc:"Comfortable 7-seater white Toyota Rumion. Perfect for family trips and long journeys with premium comfort." },
 ];
 
 /* ===================== HELPERS ===================== */
@@ -45,6 +44,12 @@ const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp
 
 function mapsRouteUrl(from, to){
   return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}`;
+}
+
+// Route link on its own line, with a blank line above it, closing both WhatsApp messages.
+function mapLinkLines(b){
+  if (!b.pickup || !b.drop) return [];
+  return ["", `Route map: ${mapsRouteUrl(b.routeFrom || b.pickup, b.routeTo || b.drop)}`];
 }
 
 const RULE = "----------------------------";
@@ -65,13 +70,13 @@ function buildOwnerMessage(b){
     `Passengers  : ${b.passengers}`,
     RULE,
   ];
-  if (b.pickup && b.drop) lines.push(`Route map: ${mapsRouteUrl(b.pickup, b.drop)}`);
+  lines.push(...mapLinkLines(b));
   return lines.join("\n");
 }
 
 // Message the CUSTOMER receives (their booking is confirmed).
 function buildCustomerMessage(b){
-  return [
+  const lines = [
     "*GURUDEV TRAVELS*",
     "Booking Confirmed",
     RULE,
@@ -84,11 +89,16 @@ function buildCustomerMessage(b){
     `To          : ${b.dateTo}`,
     `Passengers  : ${b.passengers}`,
     RULE,
+  ];
+  // Same route link the owner gets, so both sides open the identical directions.
+  lines.push(...mapLinkLines(b), "");
+  lines.push(
     "Your driver's details will be shared before pickup.",
     "For any help, just reply to this message.",
     "",
     "Gurudev Travels - Safe & comfortable journeys",
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 function whatsappLink(message, to){
@@ -104,44 +114,66 @@ function whatsappLink(message, to){
 
 /* ===================== FLEET ===================== */
 function renderFleet(){
-  $("fleetGrid").innerHTML = FLEET.map(c => `
-    <article class="car-card reveal">
-      <img src="${c.img}" alt="${escapeHtml(c.name)}" class="car-img"
-           onerror="this.classList.add('img-fallback'); this.removeAttribute('src');" />
-      <div class="p-5">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-lg font-bold">${escapeHtml(c.name)}</h3>
-          <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-${c.badge}-100 text-${c.badge}-700 dark:bg-${c.badge}-900/40 dark:text-${c.badge}-300 whitespace-nowrap">${escapeHtml(c.tag)}</span>
-        </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">${escapeHtml(c.desc)}</p>
-        <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2">
-          <span class="spec">👥 ${c.seats} seats</span>
-          <span class="spec">🧳 ${c.bags} bags</span>
-          <span class="spec">❄️ AC</span>
-          <span class="spec font-semibold text-brand-600 dark:text-brand-300">${escapeHtml(c.fare)}</span>
-        </div>
-        <button data-book="${c.id}" class="mt-5 w-full rounded-xl py-3 font-semibold text-white bg-gradient-to-r from-brand-600 to-jade-500 shadow-glow hover:opacity-95 transition">Book this car</button>
-      </div>
-    </article>`).join("");
-
-  $("car").innerHTML = FLEET.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} · ${c.seats} seats · ${escapeHtml(c.fare)}</option>`).join("");
-
-  document.querySelectorAll("[data-book]").forEach(btn => btn.addEventListener("click", () => {
-    const car = FLEET.find(c => c.id === btn.dataset.book);
-    if (car) $("car").value = car.name;
-    $("booking").scrollIntoView({ behavior:"smooth" });
-  }));
+  // The fleet grid is replaced by a static feature section in index.html.
+  // We only need to update the car selection dropdown.
+  $("car").innerHTML = FLEET.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} · ${c.seats} seats</option>`).join("");
 }
 
 /* ===================== OPEN-SOURCE MAPS (Leaflet + OpenStreetMap + Nominatim) ===================== */
 // No API key needed. Geocoding/search via the free Nominatim service.
 const NOMINATIM = "https://nominatim.openstreetmap.org";
 
-// Free-form place search -> array of results [{display_name, lat, lon}]
+/* ----- Optional Google Places (New) — used only when GOOGLE_MAPS_KEY is set and working ----- */
+let googleFailed = false, googleLib = null, placesToken = null;
+window.gm_authFailure = () => { googleFailed = true; console.warn("Google Maps key rejected — using OpenStreetMap search."); };
+
+function loadGooglePlaces(){
+  if (!GOOGLE_MAPS_KEY || GOOGLE_MAPS_KEY.startsWith("PASTE_") || googleFailed) return Promise.resolve(null);
+  if (!googleLib) googleLib = new Promise((resolve) => {
+    window.__gmReady = async () => {
+      try { resolve(await google.maps.importLibrary("places")); }
+      catch (e) { console.warn("Google Places failed to load:", e); resolve(null); }
+    };
+    const el = document.createElement("script");
+    el.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_KEY)}&loading=async&callback=__gmReady`;
+    el.async = true;
+    el.onerror = () => resolve(null);
+    document.head.appendChild(el);
+  });
+  return googleLib;
+}
+
+async function googleSearch(query){
+  const places = await loadGooglePlaces();
+  if (!places || googleFailed) return null; // null = fall back to Nominatim
+  try {
+    placesToken = placesToken || new places.AutocompleteSessionToken(); // one billing session per pick
+    const { suggestions } = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+      input: query, sessionToken: placesToken, includedRegionCodes: ["in"],
+    });
+    return suggestions.filter(x => x.placePrediction)
+      .map(x => ({ display_name: x.placePrediction.text.toString(), _pred: x.placePrediction }));
+  } catch (e) { console.warn("Google search failed:", e); return null; }
+}
+
+// Google predictions carry no coordinates until one is chosen; fetch them (closes the billing session).
+async function resolveCoords(r){
+  if (r.lat != null || !r._pred) return r;
+  const place = r._pred.toPlace();
+  await place.fetchFields({ fields: ["location", "formattedAddress"] });
+  r.lat = place.location.lat(); r.lon = place.location.lng();
+  r.display_name = place.formattedAddress || r.display_name;
+  placesToken = null;
+  return r;
+}
+
+// Free-form place search -> array of results [{display_name, lat, lon}] (Google ones resolve lat/lon on pick)
 async function geocodeSearch(query){
   if (!query || query.trim().length < 3) return [];
+  const g = await googleSearch(query.trim());
+  if (g) return g;
   try {
-    const url = `${NOMINATIM}/search?format=jsonv2&limit=5&addressdetails=0&q=${encodeURIComponent(query)}`;
+    const url = `${NOMINATIM}/search?format=jsonv2&limit=6&addressdetails=0&countrycodes=in&q=${encodeURIComponent(query)}`;
     const res = await fetch(url, { headers:{ "Accept":"application/json" } });
     return await res.json();
   } catch (e) { console.warn("Search failed:", e); return []; }
@@ -149,6 +181,13 @@ async function geocodeSearch(query){
 
 // Coordinates -> human address
 async function reverseGeocode(lat, lon){
+  if (await loadGooglePlaces()){
+    try {
+      const { Geocoder } = await google.maps.importLibrary("geocoding");
+      const res = await new Geocoder().geocode({ location: { lat, lng: lon } });
+      if (res.results && res.results[0]) return res.results[0].formatted_address;
+    } catch (e) { console.warn("Google reverse geocode failed:", e); }
+  }
   try {
     const url = `${NOMINATIM}/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
     const res = await fetch(url, { headers:{ "Accept":"application/json" } });
@@ -160,15 +199,43 @@ async function reverseGeocode(lat, lon){
 // Simple debounce so we respect Nominatim's ~1 request/second policy.
 function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-/* ----- Typing suggestions on the pickup/drop fields (free, via <datalist>) ----- */
+/* ----- Typing suggestions on the pickup/drop fields (free, via Nominatim) ----- */
+// Confirmed lat/lng for each field — only set once a suggestion (or the map picker) is picked,
+// so the route link/WhatsApp message can use the exact point instead of guessing from free text.
+const pickedCoords = { pickup: null, drop: null };
+
+function renderSuggestions(listEl, results, inputEl, fieldKey){
+  if (!results.length){ listEl.classList.add("hidden"); listEl.innerHTML = ""; return; }
+  listEl.innerHTML = results.map((r, i) => {
+    const [main, ...rest] = r.display_name.split(", ");
+    return `<li data-i="${i}">📍 <strong>${escapeHtml(main)}</strong><span class="suggest-sub">${rest.length ? ", " + escapeHtml(rest.join(", ")) : ""}</span></li>`;
+  }).join("");
+  listEl.classList.remove("hidden");
+  listEl.querySelectorAll("li").forEach((li) => li.addEventListener("click", async () => {
+    const r = await resolveCoords(results[li.dataset.i]);
+    inputEl.value = r.display_name;
+    pickedCoords[fieldKey] = { lat: parseFloat(r.lat), lon: parseFloat(r.lon) };
+    listEl.classList.add("hidden");
+    updateMapLink();
+  }));
+}
+
 function initOsmAutocomplete(){
-  [["pickup","pickupList"], ["drop","dropList"]].forEach(([inputId, listId]) => {
-    const input = $(inputId), list = document.getElementById(listId);
+  [["pickup","pickupSuggest","pickup"], ["drop","dropSuggest","drop"]].forEach(([inputId, listId, fieldKey]) => {
+    const input = $(inputId), list = $(listId);
     const run = debounce(async () => {
       const results = await geocodeSearch(input.value);
-      list.innerHTML = results.map(r => `<option value="${r.display_name.replace(/"/g,"&quot;")}"></option>`).join("");
+      renderSuggestions(list, results, input, fieldKey);
     }, 500);
-    input.addEventListener("input", () => { updateMapLink(); run(); });
+    input.addEventListener("input", () => {
+      pickedCoords[fieldKey] = null; // typed freely again — no longer an exact confirmed point
+      updateMapLink();
+      run();
+    });
+    input.addEventListener("blur", () => setTimeout(() => list.classList.add("hidden"), 150));
+    document.addEventListener("click", (e) => {
+      if (e.target !== input && !list.contains(e.target)) list.classList.add("hidden");
+    });
   });
 }
 
@@ -180,7 +247,7 @@ const LEAFLET_ICON = (typeof L !== "undefined") ? L.icon({
   iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41],
 }) : null;
 
-let pmap, pmarker, mapBuilt = false, mapTargetField = null, pickedAddress = "";
+let pmap, pmarker, mapBuilt = false, mapTargetField = null, pickedAddress = "", pickedLatLng = null;
 
 function buildPickerMap(){
   pmap = L.map("mapCanvas").setView([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], DEFAULT_MAP_ZOOM);
@@ -198,14 +265,15 @@ function buildPickerMap(){
     const list = await geocodeSearch($("mapSearch").value);
     if (!list.length){ results.classList.add("hidden"); results.innerHTML = ""; return; }
     results.innerHTML = list.map((r, i) =>
-      `<li data-i="${i}" data-lat="${r.lat}" data-lon="${r.lon}">${r.display_name}</li>`).join("");
+      `<li data-i="${i}">${escapeHtml(r.display_name)}</li>`).join("");
     results.classList.remove("hidden");
-    results.querySelectorAll("li").forEach(li => li.addEventListener("click", () => {
-      const lat = parseFloat(li.dataset.lat), lon = parseFloat(li.dataset.lon);
+    results.querySelectorAll("li").forEach(li => li.addEventListener("click", async () => {
+      const r = await resolveCoords(list[li.dataset.i]);
+      const lat = parseFloat(r.lat), lon = parseFloat(r.lon);
       pmap.setView([lat, lon], 15);
-      setPicked(lat, lon, li.textContent);
+      setPicked(lat, lon, r.display_name);
       results.classList.add("hidden");
-      $("mapSearch").value = li.textContent;
+      $("mapSearch").value = r.display_name;
     }));
   }, 500);
   $("mapSearch").addEventListener("input", run);
@@ -215,6 +283,7 @@ function buildPickerMap(){
 
 async function setPicked(lat, lon, knownAddr){
   pmarker.setLatLng([lat, lon]);
+  pickedLatLng = { lat, lon };
   $("mapConfirm").disabled = false;
   if (knownAddr){ pickedAddress = knownAddr; $("mapPickedAddr").textContent = knownAddr; return; }
   $("mapPickedAddr").textContent = "Locating…";
@@ -244,7 +313,8 @@ function openMapPicker(field){
     pmap.invalidateSize();
     const existing = $(field).value.trim();
     if (existing){
-      const r = (await geocodeSearch(existing))[0];
+      const first = (await geocodeSearch(existing))[0];
+      const r = first && await resolveCoords(first);
       if (r){ const lat = parseFloat(r.lat), lon = parseFloat(r.lon); pmap.setView([lat, lon], 14); setPicked(lat, lon, r.display_name); }
     } else if (navigator.geolocation){
       navigator.geolocation.getCurrentPosition(
@@ -261,15 +331,29 @@ function initMapPicker(){
   $("mapClose").addEventListener("click", () => hide("mapModal"));
   $("mapModal").addEventListener("click", (e) => { if (e.target.id === "mapModal") hide("mapModal"); });
   $("mapConfirm").addEventListener("click", () => {
-    if (mapTargetField && pickedAddress){ $(mapTargetField).value = pickedAddress; updateMapLink(); }
+    if (mapTargetField && pickedAddress){
+      $(mapTargetField).value = pickedAddress;
+      pickedCoords[mapTargetField] = pickedLatLng;
+      updateMapLink();
+    }
     hide("mapModal");
+  });
+  $("mapUseLocation")?.addEventListener("click", () => {
+    if (!navigator.geolocation){ alert("Your browser doesn't support location access — please pick on the map or type the address."); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { const { latitude:lat, longitude:lon } = pos.coords; pmap.setView([lat, lon], 15); setPicked(lat, lon); },
+      () => alert("Couldn't get your location. Please allow location access, or pick the spot on the map.")
+    );
   });
 }
 
+// Coordinates (when a suggestion or the map was used) beat loose typed text for the actual route.
 function updateMapLink(){
-  const from = $("pickup").value.trim(), to = $("drop").value.trim();
+  const pickupText = $("pickup").value.trim(), dropText = $("drop").value.trim();
+  const from = pickedCoords.pickup ? `${pickedCoords.pickup.lat},${pickedCoords.pickup.lon}` : pickupText;
+  const to = pickedCoords.drop ? `${pickedCoords.drop.lat},${pickedCoords.drop.lon}` : dropText;
   const link = $("mapLink");
-  if (from && to){ link.href = mapsRouteUrl(from, to); link.classList.remove("hidden"); link.classList.add("flex"); }
+  if (pickupText && dropText){ link.href = mapsRouteUrl(from, to); link.classList.remove("hidden"); link.classList.add("flex"); }
   else { link.classList.add("hidden"); link.classList.remove("flex"); }
 }
 
@@ -291,6 +375,9 @@ function initBookingForm(){
     const b = {
       name: $("name").value.trim(), car: $("car").value,
       pickup: $("pickup").value.trim(), drop: $("drop").value.trim(),
+      // Exact coordinates when a suggestion/map pin was picked, else the typed text (Google will geocode it).
+      routeFrom: pickedCoords.pickup ? `${pickedCoords.pickup.lat},${pickedCoords.pickup.lon}` : $("pickup").value.trim(),
+      routeTo: pickedCoords.drop ? `${pickedCoords.drop.lat},${pickedCoords.drop.lon}` : $("drop").value.trim(),
       dateFrom: $("dateFrom").value, dateTo: $("dateTo").value,
       passengers: $("passengers").value, phone: $("phone").value.trim(),
     };
@@ -328,7 +415,7 @@ function initBookingForm(){
   $("successModal").addEventListener("click", (e) => { if (e.target.id === "successModal") hide("successModal"); });
 }
 
-function resetForm(form){ form.reset(); $("passengers").value = 2; updateMapLink(); }
+function resetForm(form){ form.reset(); $("passengers").value = 2; pickedCoords.pickup = null; pickedCoords.drop = null; updateMapLink(); }
 function showError(el, msg){ el.textContent = msg; el.classList.remove("hidden"); }
 function showSuccess(b, ownerUrl, customerUrl){
   $("modalSummary").innerHTML = `
@@ -337,7 +424,7 @@ function showSuccess(b, ownerUrl, customerUrl){
     <div class="flex justify-between gap-4"><span class="text-slate-400">Dates</span><span class="font-semibold text-right">${b.dateFrom} → ${b.dateTo}</span></div>
     <div class="flex justify-between gap-4"><span class="text-slate-400">Passengers</span><span class="font-semibold">${escapeHtml(b.passengers)}</span></div>
     <div class="flex justify-between gap-4"><span class="text-slate-400">Name</span><span class="font-semibold text-right">${escapeHtml(b.name)}</span></div>
-    <a href="${mapsRouteUrl(b.pickup, b.drop)}" target="_blank" rel="noopener" class="block pt-1 text-brand-600 dark:text-brand-300 font-semibold hover:underline">🗺️ View route on Google Maps</a>`;
+    <a href="${mapsRouteUrl(b.routeFrom || b.pickup, b.routeTo || b.drop)}" target="_blank" rel="noopener" class="block pt-1 text-brand-600 dark:text-brand-300 font-semibold hover:underline">🗺️ View route on Google Maps</a>`;
   $("waOwnerBtn").href = ownerUrl;
   $("waCustomerBtn").href = customerUrl;
   show("successModal");
@@ -382,12 +469,51 @@ function initSubscribe(){
 }
 
 /* ===================== BOOT ===================== */
+function initCarousel(){
+  const el = $("destCarousel");
+  if (!el) return;
+  const step = () => {
+    const card = el.querySelector(".dest-card");
+    return card ? card.getBoundingClientRect().width + 20 : 260;
+  };
+  const atEnd = () => el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+  const next = () => atEnd() ? el.scrollTo({ left: 0, behavior: "smooth" }) : el.scrollBy({ left: step(), behavior: "smooth" });
+  const prev = () => el.scrollLeft <= 4 ? el.scrollTo({ left: el.scrollWidth, behavior: "smooth" }) : el.scrollBy({ left: -step(), behavior: "smooth" });
+  $("destNext")?.addEventListener("click", next);
+  $("destPrev")?.addEventListener("click", prev);
+
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let timer = null;
+  const start = () => { if (!timer) timer = setInterval(next, 2500); };
+  const stop = () => { clearInterval(timer); timer = null; };
+  ["mouseenter", "touchstart", "focusin"].forEach(ev => el.addEventListener(ev, stop, { passive: true }));
+  ["mouseleave", "touchend", "focusout"].forEach(ev => el.addEventListener(ev, start, { passive: true }));
+  start();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   $("year").textContent = new Date().getFullYear();
-  $("themeToggle").addEventListener("click", () => {
+  // Mobile menu toggle
+  const mobileMenu = $("mobileMenu");
+  const mobileMenuBtn = $("mobileMenuBtn");
+  if (mobileMenu && mobileMenuBtn) {
+    mobileMenuBtn.addEventListener("click", () => {
+      mobileMenu.classList.toggle("hidden");
+    });
+    // Close menu when a link is clicked
+    mobileMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => mobileMenu.classList.add("hidden"));
+    });
+  }
+
+  // Theme toggles
+  const toggleTheme = () => {
     const isDark = document.documentElement.classList.toggle("dark");
     localStorage.setItem("wander-theme", isDark ? "dark" : "light");
-  });
+  };
+  $("themeToggle")?.addEventListener("click", toggleTheme);
+  $("themeToggleMobile")?.addEventListener("click", toggleTheme);
+
   renderFleet();
   initBookingForm();
   initMapPicker();
@@ -396,4 +522,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   initScrollUi();
   initSubscribe();
+  initCarousel();
 });

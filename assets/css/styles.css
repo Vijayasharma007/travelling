@@ -42,7 +42,7 @@ html { scroll-padding-top: 5rem; } /* offset sticky navbar for anchor jumps */
 .dark .map-pick-btn:hover { background:rgb(30 41 59); }
 
 /* ---- Map picker canvas (Leaflet) ---- */
-.map-canvas { width:100%; height:min(55vh, 420px); background:rgb(226 232 240); z-index:0; }
+.map-canvas { width:100%; height:min(45vh, 420px); background:rgb(226 232 240); z-index:0; }
 .dark .map-canvas { background:rgb(30 41 59); }
 .leaflet-container { font-family:Inter, system-ui, sans-serif; border-radius:.75rem; }
 
@@ -117,8 +117,11 @@ html { scroll-padding-top: 5rem; } /* offset sticky navbar for anchor jumps */
 
 /* Hero */
 .hero-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-.hero-overlay { position:absolute; inset:0; z-index:1; background:linear-gradient(120deg, rgba(2,6,23,.72), rgba(2,6,23,.35) 60%, rgba(10,128,86,.25)); }
+.hero-overlay { position:absolute; inset:0; z-index:1; background:linear-gradient(120deg, rgba(2,6,23,.6), rgba(2,6,23,.38) 55%, rgba(2,6,23,.18)); }
 .hero-grad { background:linear-gradient(120deg,#0b3a6b 0%,#0a8056 100%); }
+
+/* Extra legibility for hero copy sitting on busy photography. */
+.hero-copy-shadow { text-shadow:0 4px 24px rgba(2,6,23,.85), 0 2px 6px rgba(2,6,23,.95), 0 1px 0 rgba(2,6,23,1); }
 
 .hero-social { position:absolute; left:1.25rem; bottom:6rem; z-index:10; display:none; flex-direction:column; gap:.75rem; }
 @media (min-width:1024px){ .hero-social { display:flex; } }
@@ -131,7 +134,7 @@ html { scroll-padding-top: 5rem; } /* offset sticky navbar for anchor jumps */
 .hero-info-img.img-fallback { background:linear-gradient(135deg,#60b8fa,#3cc788); }
 
 /* About / experience overlapping images */
-.about-imgs { position:relative; height:24rem; }
+.about-imgs { position:relative; height:clamp(15rem, 62vw, 24rem); }
 .about-img { position:absolute; border-radius:1.5rem; object-fit:cover; box-shadow:0 24px 50px -24px rgba(2,6,23,.45); background:#e2e8f0; }
 .dark .about-img { background:rgb(30 41 59); }
 .about-img.img-fallback { background:linear-gradient(135deg,rgba(36,128,235,.3),rgba(22,160,107,.35)); }
@@ -153,3 +156,81 @@ html { scroll-padding-top: 5rem; } /* offset sticky navbar for anchor jumps */
 /* Scroll-up button */
 .scrollup { position:fixed; right:1rem; bottom:1rem; z-index:30; display:grid; place-items:center; width:2.75rem; height:2.75rem; border-radius:.85rem; color:#fff; font-size:1.2rem; background:linear-gradient(135deg,#2480eb,#16a06b); box-shadow:0 14px 30px -12px rgba(36,128,235,.6); opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .3s, transform .3s; }
 .scrollup.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+
+/* ============================================================
+   Responsive — phone first, then the desktop refinements.
+   The layout itself is Tailwind's (sm:/lg: classes in index.html);
+   what lives here are the fixes Tailwind utilities can't express.
+   ============================================================ */
+
+/* Nothing should ever scroll sideways — decorative blurs and the
+   destinations carousel are the usual culprits. */
+html, body { overflow-x:hidden; max-width:100%; }
+
+/* The navbar is fixed and 5rem tall, so in-page anchors (#about, #booking…)
+   would otherwise land with their heading hidden underneath it. */
+section[id] { scroll-margin-top:5rem; }
+
+/* Use the small-viewport unit where supported so the hero isn't pushed
+   under a mobile browser's address bar. */
+section.hero { min-height:100vh; }
+@supports (height: 100svh) { section.hero { min-height:100svh; } }
+
+/* Touch-friendly momentum + the card is never cut off at the left edge. */
+.carousel { -webkit-overflow-scrolling:touch; scroll-padding-left:1.25rem; overscroll-behavior-x:contain; }
+
+@media (max-width:640px){
+  /* iOS zooms the whole page when a focused input is under 16px. */
+  .form-input, .map-pick-btn, select.form-input, textarea.form-input { font-size:16px; }
+
+  /* Slightly smaller destination cards so a bit of the next one always peeks
+     in — that is what tells a thumb the strip scrolls. */
+  .dest-card { width:13.5rem; height:18rem; }
+
+  /* The picker button stays square next to a full-width input. */
+  .map-pick-btn { width:3.25rem; }
+
+  /* Keep the scroll-up button clear of the home indicator on notched phones. */
+  .scrollup { right:.85rem; bottom:calc(.85rem + env(safe-area-inset-bottom)); }
+}
+
+/* Landscape phones: the map modal has almost no vertical room. */
+@media (max-height:520px){
+  .map-canvas { height:min(58vh, 260px); }
+}
+
+/* Desktop: bigger cards, and hover affordances that only make sense with a mouse. */
+@media (min-width:1024px){
+  .dest-card { width:16rem; height:21rem; }
+}
+@media (hover:none){
+  /* Touch devices get no hover lift — it would stick after a tap. */
+  .dest-card:hover, .feature-card:hover, .car-card:hover { transform:none; }
+}
+
+/* Destinations carousel arrows */
+.carousel-btn { display:grid; place-items:center; width:2.75rem; height:2.75rem; border-radius:999px; font-size:1.1rem; font-weight:700; color:#fff; background:linear-gradient(135deg,#1c69d8,#16a06b); box-shadow:0 8px 20px -10px rgba(2,6,23,.6); transition:transform .2s; }
+.carousel-btn:hover { transform:scale(1.08); }
+
+/* Logo: wordmark + animated race car (front view) */
+.logo-text { font-family:'Poppins', 'Inter', sans-serif; font-weight:700; font-size:1.3rem; line-height:1; letter-spacing:-.01em; white-space:nowrap; }
+@media (min-width:640px){ .logo-text { font-size:1.5rem; } }
+.logo-badge { display:grid; place-items:center; flex:0 0 auto; width:4rem; height:3.5rem; border-radius:1rem; overflow:hidden; background:linear-gradient(160deg,#e0f2fe 0%,#ffffff 60%,#fef3c7 100%); border:2px solid rgba(255,255,255,.9); box-shadow:0 8px 22px -8px rgba(36,128,235,.55); }
+.logo-car { width:3.1rem; height:auto; overflow:visible; }
+.logo-car-body { transform-box:fill-box; transform-origin:center bottom; animation:logo-rev .4s ease-in-out infinite alternate; }
+.logo-light { animation:logo-blink 1s steps(2,end) infinite; }
+.logo-streaks { animation:logo-streak .6s linear infinite; }
+@keyframes logo-rev { from { transform:translate(-.4px,0) scale(1); } to { transform:translate(.4px,-1px) scale(1.04); } }
+@keyframes logo-blink { 50% { opacity:.55; } }
+@keyframes logo-streak { from { transform:translateY(-6px); opacity:0; } 30% { opacity:1; } to { transform:translateY(8px); opacity:0; } }
+@media (prefers-reduced-motion: reduce){ .logo-car-body, .logo-light, .logo-streaks { animation:none; } }
+
+/* Pickup/drop suggestion rows (Google-style: bold place + muted region) */
+.map-results li .suggest-sub { color:#64748b; font-size:.85em; }
+
+/* Subscribe banner: mountain photo with a dark gradient so the text stays readable */
+.subscribe-bg {
+  background:
+    linear-gradient(to bottom, rgba(2,6,23,.45), rgba(2,6,23,.6)),
+    #1d4a8a url("https://commons.wikimedia.org/wiki/Special:FilePath/Kangchenjunga_PangPema.JPG?width=1600") center / cover no-repeat;
+}
